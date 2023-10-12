@@ -17,7 +17,7 @@ SQL_UPDATE = '''
         from
         (
                 select distinct substring(ta, 1,4) as tag, tg
-                from volkov_hcalls
+                from volkov_prj_hcalls
                 where tg<>1000
                 and to_date(sdate,'DD.MM.YYYY') = to_date('22.09.2023','DD.MM.YYYY')
                 group by tag, tg, extract(hour from stime::time)
@@ -31,7 +31,7 @@ SQL_INSERT = '''
                 select tag, tg, '1' as days_spam from
                 (
                         select distinct substring(ta, 1,4) as tag, tg
-                        from volkov_hcalls
+                        from volkov_prj_hcalls
                         where tg<>1000 and to_date(sdate,'DD.MM.YYYY') = to_date('22.09.2023','DD.MM.YYYY')
                         group by tag, tg, extract(hour from stime::time)
                         having count(ta)>30 and (100*count(case when duration=0 then 1 end)/count(ta)) > 80
@@ -40,7 +40,7 @@ SQL_INSERT = '''
         );
 '''
 
-                          args = {
+args = {
         'owner': 'volkovms',
         'start_date': datetime(2023,10,10),
         'retries': 3,
@@ -49,7 +49,7 @@ SQL_INSERT = '''
 
 with DAG(DAG_NAME,
         description='volkovms',
-        schedule_interval='* * * * *',
+        schedule_interval='* 4 * * *',
         catchup=False,
         max_active_runs=1,
         default_args = args,
@@ -71,5 +71,4 @@ with DAG(DAG_NAME,
             )
 
     sql_update >> sql_insert
-
 
